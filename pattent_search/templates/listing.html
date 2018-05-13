@@ -1,0 +1,40 @@
+{% extends 'index.html' %}
+
+{% block main %}
+    <h1>List pattents</h1>
+
+    <form action="{% url 'search' %}" enctype='multipart/form-data' method="get">
+        <input type="text" name="q" multiple value="{{ request.GET.q }}">
+        <button>Search</button>
+
+        <h3>---------Total <b>{{ pattens.paginator.count }}</b> results ({{ pattens|length }} is showing at page {{ request.GET.page|default:1 }} ) in {{ time|floatformat:6 }}s</h3>
+
+        {% for patten in pattens %}
+            <div class="pattens-item">
+                <h2>{{ patten.title }}</h2>
+                <p>{{ patten.abstract }}</p>
+                <a href="{% url 'show' patten.id  %}">View detail</a>
+                <br>
+            </div>
+            <hr>
+        {% endfor %}
+        {% if pattens.has_other_pages %}
+            {% if pattens.has_previous %}
+                <li><a href="?page={{ pattens.previous_page_number }}">&laquo;</a></li>
+            {% else %}
+                <li class="disabled"><span>&laquo;</span></li>
+            {% endif %}
+            {% for i in pattens.paginator.page_range %}
+                {% if pattens.number == i %}
+                    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                {% else %}
+                    <li><a href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if pattens.has_next %}
+                <li><a href="?page={{ pattens.next_page_number }}">&raquo;</a></li>
+            {% else %}
+                <li class="disabled"><span>&raquo;</span></li>
+            {% endif %}
+        {% endif %}
+{% endblock %}

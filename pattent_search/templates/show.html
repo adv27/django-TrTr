@@ -1,0 +1,16 @@
+{% extends 'index.html' %}
+
+{% block main %}
+
+    <div class="pattens-item">
+        <h1>{{ patten.title }}</h1>
+        <hr>
+        <h3>#-Abstract</h3>
+        <p  style="white-space: pre-line">{{ patten.abstract }}</p>
+        <h3>#-Content</h3>
+        <p style="white-space: pre-line">{{ patten.content }}</p>
+        <br>
+    </div>
+    <hr>
+
+{% endblock %}

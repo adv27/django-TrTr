@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pattens</title>
+</head>
+<body>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class=" alert alert-light alert-dismissible fade show {{ message.tags }}"{% endif %} role="alert">{{ message }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<ol>
+    <li><a href="{% url 'upload_file' %}">Upload file</a></li>
+    <li><a href="{% url 'search' %}">Search keyword</a></li>
+</ol>
+
+{% block main %}
+    <h1>Upload your .xml files here to begin</h1>
+    <form action="{% url 'upload_file' %}" enctype='multipart/form-data' method="post">
+        {% csrf_token %}
+        <input type="file" name="upload_file" multiple><br>
+        or <br>
+        <input placeholder="Directory " type="text" name="upload_dir">
+        {#    <select name="field" >#}
+        {#        <option value="title">Title</option>#}
+        {#        <option value="abstract">Abstract</option>#}
+        {#        <option value="description">Description</option>#}
+        {#    </select>#}
+        <button>Upload</button>
+    </form>
+{% endblock %}
+</body>
+</html>
