@@ -77,8 +77,7 @@ def upload_file(request):
     
     if (not file or len(file) == 0) :
         return redirect('/')
-    print('len(file)')
-    print(len(file))
+    print('len(file): {}'.format(len(file)))
     
     skiped_file = []
     for idx,f in enumerate(file):
@@ -89,16 +88,19 @@ def upload_file(request):
         if Patent.objects.filter(filename=filename).first():
             skiped_file.append(filename)
             print('Skip file duplicate')
-        
-        doc = json.loads(json.dumps(xmltodict.parse(f.read())))
+        _dict = xmltodict.parse(f.read())
+        _json = json.dumps(_dict)
+        doc = json.loads(_json)
+        # doc = json.loads(json.dumps(xmltodict.parse(f.read())))
         f.close()
-        try:
-            store_xml(filename,doc)
-        except Exception as e :
-            skiped_file.append(filename)
-            print('Skip')
-            print(e)
-            continue
+        store_xml(filename,doc)
+        # try:
+        #     store_xml(filename,doc)
+        # except Exception as e :
+        #     skiped_file.append(filename)
+        #     print('Skip')
+        #     print(e)
+        #     continue
     
     messages.success(request,'Complete upload %d files' % (len(file)-len(skiped_file)))
     if len(skiped_file) > 0:
@@ -109,42 +111,95 @@ def upload_file(request):
     
     return redirect('/')
 
+def store_xml(filename, doc):
+    print(doc)
 
-def store_xml(filename,content):
-    print(content)
+    title = doc['us-patent-application'] \
+        ['us-bibliographic-data-application'] \
+        ['invention-title'] \
+        ['#text']
 
-    doc = json.loads(json.dumps(xmltodict.parse(content)))
-    title = doc['patent-application-publication'] \
-        ['subdoc-bibliographic-information'] \
-        ['technical-information'] \
-        ['title-of-invention']
-    
-    abstract = doc['patent-application-publication'] \
-        ['subdoc-abstract'] \
-        ['paragraph']
+    abstract = doc['us-patent-application'] \
+        ['abstract']
+
     if isinstance(abstract, list):
         abstract = get_values_recursive(abstract)
     else:
-        abstract = abstract['#text']
+        abstract = abstract['p']['#text']
+
+    detail = doc['us-patent-application'] \
+        ['description'] \
+        ['p']
     
-    summary = doc['patent-application-publication'] \
-        ['subdoc-description'] \
-        ['summary-of-invention'] \
-        ['section']
-    
-    detail = doc['patent-application-publication'] \
-        ['subdoc-description'] \
-        ['detailed-description'] \
-        ['section']
-    
-    detail_txt = get_values_recursive(detail)
-    summary_txt = get_values_recursive(summary)
-    
+    detail = ', '.join(list(map(lambda d: d['#text'],detail)))
+
+    # title = doc['patent-application-publication'] \
+    #     ['subdoc-bibliographic-information'] \
+    #     ['technical-information'] \
+    #     ['title-of-invention']
+    #
+    # abstract = doc['patent-application-publication'] \
+    #     ['subdoc-abstract'] \
+    #     ['paragraph']
+    # if isinstance(abstract, list):
+    #     abstract = get_values_recursive(abstract)
+    # else:
+    #     abstract = abstract['#text']
+    #
+    # summary = doc['patent-application-publication'] \
+    #     ['subdoc-description'] \
+    #     ['summary-of-invention'] \
+    #     ['section']
+    #
+    # detail = doc['patent-application-publication'] \
+    #     ['subdoc-description'] \
+    #     ['detailed-description'] \
+    #     ['section']
+
     pat = Patent(
         filename=filename,
         title=title,
         abstract=abstract,
-        content=summary_txt + '\n' + detail_txt,
+        content=detail,
     )
     pat.save()
+# def store_xml(filename,content):
+#     print(len(content))
+
+#     # doc = json.loads(json.dumps(xmltodict.parse(content)))
+#     doc = content
+#     print('after loads')
+#     title = doc['patent-application-publication'] \
+#         ['subdoc-bibliographic-information'] \
+#         ['technical-information'] \
+#         ['title-of-invention']
+    
+#     abstract = doc['patent-application-publication'] \
+#         ['subdoc-abstract'] \
+#         ['paragraph']
+#     if isinstance(abstract, list):
+#         abstract = get_values_recursive(abstract)
+#     else:
+#         abstract = abstract['#text']
+    
+#     summary = doc['patent-application-publication'] \
+#         ['subdoc-description'] \
+#         ['summary-of-invention'] \
+#         ['section']
+    
+#     detail = doc['patent-application-publication'] \
+#         ['subdoc-description'] \
+#         ['detailed-description'] \
+#         ['section']
+    
+#     detail_txt = get_values_recursive(detail)
+#     summary_txt = get_values_recursive(summary)
+    
+#     pat = Patent(
+#         filename=filename,
+#         title=title,
+#         abstract=abstract,
+#         content=summary_txt + '\n' + detail_txt,
+#     )
+#     pat.save()
 
