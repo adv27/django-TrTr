@@ -73,18 +73,18 @@ def upload_file(request):
             messages.success(request, 'Done')
         return redirect('/')
 
-    
-    
+
+
     if (not file or len(file) == 0) :
         return redirect('/')
     print('len(file): {}'.format(len(file)))
-    
+
     skiped_file = []
     for idx,f in enumerate(file):
         print('%d/%d completed'% (idx+1,len(file)))
-        
+
         filename = f.name.split('/')[-1]
-        
+
         if Patent.objects.filter(filename=filename).first():
             skiped_file.append(filename)
             print('Skip file duplicate')
@@ -101,14 +101,14 @@ def upload_file(request):
         #     print('Skip')
         #     print(e)
         #     continue
-    
+
     messages.success(request,'Complete upload %d files' % (len(file)-len(skiped_file)))
-    if len(skiped_file) > 0:
+    if skiped_file:
         if len(skiped_file) > 10:
             messages.error(request, 'File format error or duplicate ! skip %d files : [...]' % len(skiped_file) )
         else:
             messages.error(request, 'File format error or duplicate ! skip %d files: %s' % (len(skiped_file),' , '.join(skiped_file)))
-    
+
     return redirect('/')
 
 def store_xml(filename, doc):
